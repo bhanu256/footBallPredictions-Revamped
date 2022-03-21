@@ -4,7 +4,7 @@ const axios = require("axios").default;
 
 // function to fetch Local Team Details
 exports.fetchFixtureProbabilities = functions.firestore
-  .document("fixtures/{leagueID}")
+  .document("sportmonks/{leagueID}")
   .onCreate((snap, context) => {
     const data = snap.data();
     const id = context.params.leagueID;
@@ -20,7 +20,7 @@ exports.fetchFixtureProbabilities = functions.firestore
 
         return admin
           .firestore()
-          .doc("fixtures/" + data.fixture_id)
+          .doc("sportmonks/" + data.fixture_id)
           .update({ "predictions": data.predictions});
       })
       .catch(function (error) {

@@ -3,7 +3,7 @@ const admin = require("firebase-admin");
 const axios = require("axios").default;
 
 exports.getSportMonksFixturesSize = functions.https.onRequest((req, res) => {
-  const query = admin.firestore().collection("fixtures");
+  const query = admin.firestore().collection("sportmonks");
 
   query
     .get()
@@ -21,14 +21,13 @@ exports.getFixtures = functions.https.onRequest((req, res) => {
   try {
     admin
       .firestore()
-      .collection("fixtures")
-      .where("tipster", "==", 0)
+      .collection("sportmonks")
       .doc(docAt)
       .get()
       .then((snap) => {
         const query = admin
           .firestore()
-          .collection("fixtures")
+          .collection("sportmonks")
           .orderBy("id")
           .startAfter(snap || 0)
           .limit(5);
@@ -48,8 +47,7 @@ exports.getFixtures = functions.https.onRequest((req, res) => {
   } catch (error) {
     const query = admin
       .firestore()
-      .collection("fixtures")
-      .where("tipster", "==", 0)
+      .collection("sportmonks")
       .orderBy("id")
       .startAfter(0)
       .limit(5);

@@ -107,6 +107,29 @@ async function fetchFixturesFromAPI(dt) {
   return dt;
 }
 
+async function deleteIfCond(snap) {
+  const firestore = admin.firestore();
+  const batch = firestore.batch();
+
+  return snap.get().then(async (doc) => {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const yyyy = today.getFullYear();
+    var date = yyyy + "-" + mm + "-" + (Number(dd)-2);
+
+    const lastDate = new Date(date).toISOString().split('T')[0];
+    const data = doc.data();
+    const objDate = new Date(data.time.starting_at.date).toISOString().split('T')[0];
+
+    if (objDate < lastDate) {
+      batch.delete(snap)
+    }
+
+    return await batch.commit();
+  });
+}
+
 async function deleteSportMonksCollection() {
   const firestore = admin.firestore();
   const batch = firestore.batch();
@@ -114,25 +137,10 @@ async function deleteSportMonksCollection() {
   firestore
     .collection("sportmonks")
     .listDocuments()
-    .then((docs) => {
-      docs.map((doc) => {
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2, "0");
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const yyyy = today.getFullYear();
-        var date = yyyy + "-" + mm + "-" + (Number(dd)-2);
-
-        const lastDate = new Date(date);
-        const data = doc.data();
-        console.log(data);
-        const objDate = new Date(data.time.starting_at.date);
-
-        if (objDate > lastDate) {
-          batch.delete(doc)
-        }
+    .then(async (docs) => {
+      docs.forEach(async (snap) => {
+        await deleteIfCond(snap, batch);
       });
-
-      return batch.commit();
     });
 }
 
@@ -186,11 +194,13 @@ exports.fetchLeagueNames = league.fetchLeagueNames;
 
 exports.fetchLeagueNamesCron = league.fetchLeagueNamesCron;
 
-exports.updateLocalTeamsCollection = teams.fetchLocalTeamNames;
+exports.fetchAdditionalData = teams.fetchAdditionalData;
 
-exports.updateVisitorTeamsCollection = teams.fetchVisitorTeamNames;
+//exports.updateLocalTeamsCollection = teams.fetchLocalTeamNames;
 
-exports.updateFixtureProbabilities = probability.fetchFixtureProbabilities;
+// exports.updateVisitorTeamsCollection = teams.fetchVisitorTeamNames;
+
+//exports.updateFixtureProbabilities = probability.fetchFixtureProbabilities;
 
 exports.getFixtures = query.getFixtures;
 
@@ -199,10 +209,6 @@ exports.getLeagueNames = query.getLeagueNames;
 exports.getTeamNames = query.getTeamNames;
 
 exports.getSportMonksFixturesSize = query.getSportMonksFixturesSize;
-
-exports.getLeagueNames = query.getLeagueNames;
-
-exports.getTeamNames = query.getTeamNames;
 
 exports.getSureTips = sureTips.getSureTips;
 

@@ -62,7 +62,6 @@ exports.getSureTips = functions.https.onRequest(async (req, res) => {
           .startAfter(snap || 0);
 
         let result = await fetchSatisfiedRecords(query, moreThanPer);
-        functions.logger.log(result);
         res.send(result);
       })
       .catch((error) => {
@@ -76,7 +75,6 @@ exports.getSureTips = functions.https.onRequest(async (req, res) => {
       .startAfter(0);
 
     let result = await fetchSatisfiedRecords(query, moreThanPer);
-    functions.logger.log(result);
     res.send(result);
   }
 
