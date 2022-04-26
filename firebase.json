@@ -1,6 +1,9 @@
 {
   "functions": {
-    "source": "functions"
+    "source": "functions",
+    "predeploy": [
+      "npm --prefix ./functions/ run lint"
+    ]
   },
   "database": {
     "rules": "database.rules.json"
@@ -8,5 +11,26 @@
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001,
+      "host": "127.0.0.1"
+    },
+    "firestore": {
+      "port": 8080,
+      "host": "127.0.0.1"
+    },
+    "database": {
+      "port": 9000,
+      "host": "127.0.0.1"
+    },
+    "pubsub": {
+      "port": 8085,
+      "host": "127.0.0.1"
+    },
+    "ui": {
+      "enabled": true
+    }
   }
 }
