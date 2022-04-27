@@ -16,6 +16,7 @@ async function mapResponseToObject(response) {
     visitorTeam: visitorTeam,
     league: league,
     predictions: predictions,
+    maximumValue: 0,
   };
 
   return obj;

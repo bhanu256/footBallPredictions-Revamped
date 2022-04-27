@@ -35,6 +35,18 @@ exports.fetchFixtures = functions.pubsub
       }
     });
 
+exports.updateMaxValue = functions.firestore
+    .document('fixtures/{id}')
+    .onCreate(async (snap, context) => {
+      const data = snap.data();
+      const maxValue = await utils
+          .getMaximumPredictionValue(data.predictions.predictions);
+
+      return snap.ref.update({
+        maximumValue: maxValue,
+      });
+    });
+
 
 /* Helper Functions */
 
@@ -63,6 +75,7 @@ async function deleteFixtures() {
 }
 
 async function fetchFixtures() {
+  const date = '2022-04-24';
   const url = `https://soccer.sportmonks.com/api/v2.0/fixtures/date/${date}?api_token=kLCL2pwPxb6Fq04qwcYkNFAYclNk7RyVfy3QYTyiV34lU6yieEIT6nyocPuA`;
 
   return axios.get(url).then(async (response) => {

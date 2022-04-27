@@ -44,3 +44,19 @@ function isItemValid(item) {
 exports.isItemValid = (item) => {
   return isItemValid(item);
 };
+
+async function getMaximumPredictionValue(predictions) {
+  let maxValue = 0;
+  for (const pred in predictions) {
+    if (typeof predictions[pred] == 'number') {
+      if (predictions[pred] > maxValue) {
+        maxValue = Number(predictions[pred]);
+      }
+    }
+  }
+
+  return maxValue;
+}
+exports.getMaximumPredictionValue = (predictions, percentage) => {
+  return getMaximumPredictionValue(predictions);
+};

@@ -16,11 +16,16 @@ firebase.initializeApp(firebaseConfig);
 
 const fixtures = require('./services/fixtures');
 const queryFixtures = require('./services/queryFixtures');
+const sureTips = require('./services/querySureTips');
 
 
 exports.fetchFixturesByTrigger = fixtures.fetchFixturesByTrigger;
 
 exports.fetchFixtures = fixtures.fetchFixtures;
+
+exports.updateMaxValue = fixtures.updateMaxValue;
+
+exports.getSureTips = sureTips.getSureTips;
 
 exports.getFixtures = queryFixtures.getFixtures;
 
