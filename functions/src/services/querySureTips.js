@@ -35,5 +35,14 @@ exports.getSureTips = functions.https.onRequest(async (req, res) => {
     dataSet.push(doc.data());
   });
 
-  res.send(dataSet);
+  const querySnapShot = await colRef.get();
+  const count = querySnapShot.docs.length;
+  const meta = {
+    count: count,
+  };
+
+  res.send({
+    items: dataSet,
+    meta: meta,
+  });
 });

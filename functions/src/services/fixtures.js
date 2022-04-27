@@ -75,7 +75,6 @@ async function deleteFixtures() {
 }
 
 async function fetchFixtures() {
-  const date = '2022-04-24';
   const url = `https://soccer.sportmonks.com/api/v2.0/fixtures/date/${date}?api_token=kLCL2pwPxb6Fq04qwcYkNFAYclNk7RyVfy3QYTyiV34lU6yieEIT6nyocPuA`;
 
   return axios.get(url).then(async (response) => {
