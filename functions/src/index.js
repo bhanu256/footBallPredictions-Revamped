@@ -17,7 +17,9 @@ firebase.initializeApp(firebaseConfig);
 const fixtures = require('./services/fixtures');
 const queryFixtures = require('./services/queryFixtures');
 const sureTips = require('./services/querySureTips');
+const purchases = require('./services/purchases');
 
+exports.verifySubsPurchases = purchases.verifySubsPurchases;
 
 exports.fetchFixturesByTrigger = fixtures.fetchFixturesByTrigger;
 
