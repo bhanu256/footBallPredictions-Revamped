@@ -13,17 +13,20 @@ const twoDaysBackDate = utils.getTwoDaysBackDate();
 
 /* Endpoints */
 
-exports.fetchFixturesByTrigger = functions.https.onRequest(async (req, res) => {
-  try {
-    const response = await deleteExistingAndFetchFixtures();
-    res.status(200);
-    res.send(response);
-  } catch (e) {
-    functions.logger.error(e);
-    res.status(500);
-    res.send({'code': e});
-  }
-});
+exports.fetchFixturesByTrigger = functions
+    .runWith({timeoutSeconds: 540}).https.onRequest(async (req, res) => {
+      const next = req.query.next;
+
+      try {
+        const response = await deleteExistingAndFetchFixtures(next);
+        res.status(200);
+        res.send(response);
+      } catch (e) {
+        functions.logger.error(e);
+        res.status(500);
+        res.send({'code': e});
+      }
+    });
 
 exports.fetchFixtures = functions.pubsub
     .schedule('0 */12 * * *')
@@ -37,22 +40,34 @@ exports.fetchFixtures = functions.pubsub
 
 exports.updateMaxValue = functions.firestore
     .document('fixtures/{id}')
-    .onCreate(async (snap, context) => {
+    .onCreate(async (snap, _context) => {
       const data = snap.data();
       const maxValue = await utils
           .getMaximumPredictionValue(data.predictions.predictions);
 
-      return snap.ref.update({
+      return snap.ref.set({
         maximumValue: maxValue,
-      });
+      }, {merge: true});
+    });
+
+exports.updateMaxValueOnUpdate = functions.firestore
+    .document('fixtures/{id}')
+    .onUpdate(async (change, _context) => {
+      const data = change.after.data();
+      const maxValue = await utils
+          .getMaximumPredictionValue(data.predictions.predictions);
+
+      return change.after.ref.set({
+        maximumValue: maxValue,
+      }, {merge: true});
     });
 
 
 /* Helper Functions */
 
-async function deleteExistingAndFetchFixtures() {
+async function deleteExistingAndFetchFixtures(next) {
   await deleteFixtures();
-  await fetchFixtures();
+  await fetchFixtures(next);
 
   // await insertDummyData();
 
@@ -74,11 +89,21 @@ async function deleteFixtures() {
   });
 }
 
-async function fetchFixtures() {
-  const url = `https://soccer.sportmonks.com/api/v2.0/fixtures/date/${date}?api_token=kLCL2pwPxb6Fq04qwcYkNFAYclNk7RyVfy3QYTyiV34lU6yieEIT6nyocPuA`;
+async function fetchFixtures(next) {
+  let url = `https://soccer.sportmonks.com/api/v2.0/fixtures/date/${date}?api_token=kLCL2pwPxb6Fq04qwcYkNFAYclNk7RyVfy3QYTyiV34lU6yieEIT6nyocPuA`;
+
+  if (next) {
+    url = url.concat(`&page=${next}`);
+  }
 
   return axios.get(url).then(async (response) => {
     const items = response.data.data;
+    const paginationObj = response.data.meta.pagination;
+    if (Object.prototype.hasOwnProperty.call(paginationObj.links, 'next')) {
+      const nextNumber = paginationObj.links.next.split('?page=')[1];
+      // axios.get(`http://127.0.0.1:5001/footballpredictions-3603f/us-central1/fetchFixturesByTrigger?next=${nextNumber}`);
+      axios.get(`https://us-central1-footballpredictions-3603f.cloudfunctions.net/fetchFixturesByTrigger?next=${nextNumber}`);
+    }
 
     for (const item of items) {
       const obj = await mapper.mapResponseToObject(item);
@@ -93,6 +118,8 @@ async function fetchFixtures() {
 }
 
 async function insertFixtures(obj) {
+  await colRef.doc(obj.id.toString()).delete();
+
   const docRef = colRef.doc(obj.id.toString());
 
   await docRef.set(obj);
@@ -106,6 +133,7 @@ async function insertDummyData() {
         date: '2022-04-26',
         time: '13:00:00',
       },
+      maximumValue: 85,
     };
 
     await colRef.doc(i.toString()).set(obj);

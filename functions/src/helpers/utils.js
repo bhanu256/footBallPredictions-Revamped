@@ -29,7 +29,7 @@ exports.getTwoDaysBackDate = () => {
 };
 
 function isObjValid(obj) {
-  return obj && Object.keys(obj).length >= 0;
+  return obj && Object.keys(obj).length > 0;
 }
 
 function isItemValid(item) {
