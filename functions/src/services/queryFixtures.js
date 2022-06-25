@@ -15,11 +15,11 @@ exports.getFixtures = functions.https.onRequest(async (req, res) => {
     const lastDocSnap = await lastDocRef.get();
 
     startAtSnap = colRef
-        .orderBy('date.date')
+        .orderBy('date.date', 'desc')
         .orderBy('date.time')
         .startAfter(lastDocSnap);
   } else {
-    startAtSnap = colRef.orderBy('date.date').orderBy('date.time');
+    startAtSnap = colRef.orderBy('date.date', 'desc').orderBy('date.time');
   }
 
   const dataSet = [];

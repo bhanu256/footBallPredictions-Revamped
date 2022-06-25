@@ -16,9 +16,10 @@ const twoDaysBackDate = utils.getTwoDaysBackDate();
 exports.fetchFixturesByTrigger = functions
     .runWith({timeoutSeconds: 540}).https.onRequest(async (req, res) => {
       const next = req.query.next;
+      const date = req.query.date;
 
       try {
-        const response = await deleteExistingAndFetchFixtures(next);
+        const response = await deleteExistingAndFetchFixtures(next, date);
         res.status(200);
         res.send(response);
       } catch (e) {
@@ -65,9 +66,9 @@ exports.updateMaxValueOnUpdate = functions.firestore
 
 /* Helper Functions */
 
-async function deleteExistingAndFetchFixtures(next) {
+async function deleteExistingAndFetchFixtures(next, date) {
   await deleteFixtures();
-  await fetchFixtures(next);
+  await fetchFixtures(next, date);
 
   // await insertDummyData();
 
@@ -89,8 +90,9 @@ async function deleteFixtures() {
   });
 }
 
-async function fetchFixtures(next) {
-  let url = `https://soccer.sportmonks.com/api/v2.0/fixtures/date/${date}?api_token=kLCL2pwPxb6Fq04qwcYkNFAYclNk7RyVfy3QYTyiV34lU6yieEIT6nyocPuA`;
+async function fetchFixtures(next, apiDate) {
+  const finalDate = apiDate ? apiDate : date;
+  let url = `https://soccer.sportmonks.com/api/v2.0/fixtures/date/${finalDate}?api_token=kLCL2pwPxb6Fq04qwcYkNFAYclNk7RyVfy3QYTyiV34lU6yieEIT6nyocPuA`;
 
   if (next) {
     url = url.concat(`&page=${next}`);
@@ -101,8 +103,13 @@ async function fetchFixtures(next) {
     const paginationObj = response.data.meta.pagination;
     if (Object.prototype.hasOwnProperty.call(paginationObj.links, 'next')) {
       const nextNumber = paginationObj.links.next.split('?page=')[1];
+      let funcUrl = `https://us-central1-footballpredictions-3603f.cloudfunctions.net/fetchFixturesByTrigger?next=${nextNumber}`;
+
+      if (apiDate) {
+        funcUrl = funcUrl.concat(`&date=${finalDate}`);
+      }
       // axios.get(`http://127.0.0.1:5001/footballpredictions-3603f/us-central1/fetchFixturesByTrigger?next=${nextNumber}`);
-      axios.get(`https://us-central1-footballpredictions-3603f.cloudfunctions.net/fetchFixturesByTrigger?next=${nextNumber}`);
+      axios.get(funcUrl);
     }
 
     for (const item of items) {

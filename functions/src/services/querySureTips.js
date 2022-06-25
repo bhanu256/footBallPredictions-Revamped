@@ -18,14 +18,14 @@ exports.getSureTips = functions.https.onRequest(async (req, res) => {
     startAtSnap = colRef
         .where('maximumValue', '>=', percentage)
         .orderBy('maximumValue')
-        .orderBy('date.date')
+        .orderBy('date.date', 'desc')
         .orderBy('date.time')
         .startAfter(lastDocSnap);
   } else {
     startAtSnap = colRef
         .where('maximumValue', '>=', percentage)
         .orderBy('maximumValue')
-        .orderBy('date.date')
+        .orderBy('date.date', 'desc')
         .orderBy('date.time');
   }
 
